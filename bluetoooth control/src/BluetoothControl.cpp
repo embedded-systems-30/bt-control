@@ -13,7 +13,7 @@ class bluetooth{
 bluetooth(PinName pin, PinName pin2, int Baud_rate): hm10(pin, pin2, Baud_rate){};
 char check_for_data(){//checks if data is readable then equates character c with the value given to the bluetooth module
 if(hm10.readable()){
-    c= hm10.read(&c,1);
+   hm10.read(&c,1);
    return c;
 }
 return '\0';//if no value is readable return random value in order to showcase error

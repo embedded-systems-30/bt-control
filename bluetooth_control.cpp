@@ -1,5 +1,6 @@
 #include "mbed.h"
 #include "LineSensor.hpp"//inclue line sensor class
+#include "mbed2/299/TARGET_NUCLEO_F401RE/TARGET_STM/TARGET_STM32F4/TARGET_NUCLEO_F401RE/PinNames.h"
 
 
 class bluetooth{
@@ -24,7 +25,7 @@ int main(void){
     PwmOut left_motor(PA_8);
     bluetooth bt(PA_11, PA_12, 9600);
     bool LineDetected;
-     line_sensor sensor(PA_7, PA_6, PA_5, PA_12, PA_11, PA_8);//creating an object for the 6 sensors
+     line_sensor sensor(A0, A1, A2, A3, A4, A5);//creating an object for the 6 sensors
 
      while(1){
      LineDetected = sensor.line_detection();

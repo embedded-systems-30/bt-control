@@ -20,7 +20,25 @@ return '\0';//if no value is readable return random value in order to showcase e
 }
 };
 
-   
+Ticker SpeedReducer;
+float duty_cycle = 0.75f;
+void reduce_speed(){//can be in hpp
+    PwmOut right_motor(PC_7);//creating objects for bluetooth module and right and left motor
+    PwmOut left_motor(PA_8);
+     if (duty_cycle > 0){
+     duty_cycle -= 0.05f;
+     right_motor.period_us(30);
+     left_motor.period_us(30);
+     right_motor.write(duty_cycle);
+     left_motor.write(duty_cycle);
+     
+    }else{
+     SpeedReducer.detach();
+ }
+  if (duty_cycle < 0) {
+        duty_cycle = 0;
+        }
+ }  
 int main(void){
     PwmOut right_motor(PC_7);//creating objects for bluetooth module and right and left motor
     PwmOut left_motor(PA_8);
@@ -61,10 +79,7 @@ int main(void){
             bt.check_for_data();
             }
     else {//if line is not detected and bluetooth command not received, stop the buggy
-            right_motor.period_us(30);
-            left_motor.period_us(30);
-            right_motor.write(0.5f);
-            left_motor.write(0.5f);
+            SpeedReducer.attach(&reduce_speed, 0.0050);
             sensor.line_detection();
             }
 

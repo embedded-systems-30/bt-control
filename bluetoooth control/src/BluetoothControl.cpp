@@ -1,4 +1,5 @@
 
+
 #include "mbed.h"
 #include "LineSensor.hpp"//inclue line sensor class
 
@@ -19,18 +20,18 @@ if(hm10.readable()){
 return '\0';//if no value is readable return random value in order to showcase error
 }
 };
-
-Ticker SpeedReducer;
-float duty_cycle = 0.75f;
-void reduce_speed(){//can be in hpp
     PwmOut right_motor(PC_7);//creating objects for bluetooth module and right and left motor
     PwmOut left_motor(PA_8);
+
+Ticker SpeedReducer;
+float duty_cycle = .51f;
+void reduce_speed(){//can be in hpp
      if (duty_cycle > 0){
      duty_cycle -= 0.05f;
      right_motor.period_us(30);
      left_motor.period_us(30);
      right_motor.write(duty_cycle);
-     left_motor.write(duty_cycle);
+     left_motor.write(1-duty_cycle);
      
     }else{
      SpeedReducer.detach();
@@ -38,51 +39,78 @@ void reduce_speed(){//can be in hpp
   if (duty_cycle < 0) {
         duty_cycle = 0;
         }
+       
  }  
+     DigitalOut ena(PB_2,0);
+     
+     void buggy_straight(){
+         right_motor.write(0.6f);
+         left_motor.write(0.4f);
+     }
+     void buggy_turn_right(){
+         right_motor.write(0.6f);
+         left_motor.write(0.35f);
+     }
+     void buggy_turn_left(){
+      right_motor.write(0.65);
+      left_motor.write(0.4f);
+     }
 int main(void){
-    PwmOut right_motor(PC_7);//creating objects for bluetooth module and right and left motor
-    PwmOut left_motor(PA_8);
     bluetooth bt(PA_11, PA_12, 9600);
-    bool LineDetected;
+    right_motor.write(0.50);
+    left_motor.write(0.50);
+    ThisThread::sleep_for(1000ms);
+    ena=1; 
+    while(1){
+      right_motor=0.6f;
+      left_motor=0.4f;
+    }
+    
+    
      line_sensor sensor(A0, A1, A2, A3, A4, A5);//creating an object for the 6 sensors
-
-     while(1){
-     LineDetected = sensor.line_detection();
-     bt.check_for_data();//check bluetooth module for any new values
-    if(LineDetected==true){//if a line is detected and it is at the centre the buggy will move in a straight line continuously
-        
-     if(sensor.line_centre==true){
         right_motor.period_us(30);
         left_motor.period_us(30);
-        right_motor.write(0.75f);
-        left_motor.write(0.75f);
-        bt.check_for_data();
-        printf("line detected");
+     while(1){
+     sensor.read_line();
+     bt.check_for_data();//check bluetooth module for any new values
+    if(sensor.line_detection()==true){//if a line is detected and it is at the centre the buggy will move in a straight line continuously
+        
+     if(sensor.line_centre()){
+      bt.c='c';
+      buggy_straight();
+        }
 
-        if (bt.c=='T'){//if microcontroller recieves command 'T' from buggy it will start doing a uturn until line has been detected again
+      if(sensor.line_right()){
+         buggy_turn_right();
+      }
+      if(sensor.line_left()){
+         buggy_turn_left();
+      }
+     }   
+             if (bt.c=='T'){//if microcontroller recieves command 'T' from buggy it will start doing a uturn until line has been detected again
             right_motor.period_us(30);
             left_motor.period_us(30);
-            right_motor.write(0.25f);
-            left_motor.write(0.75f);
+            right_motor.write(0.6f);
+            left_motor.write(0.6f);
             sensor.line_detection();
+            if(sensor.line_centre()==true){
+                bt.c='c';
+                buggy_straight();
+            }
+            ThisThread::sleep_for(1000ms);
            
             }
-        
-        }
-     }   
-    else if(LineDetected==false&&bt.c=='T') {        //if line not detected and u turn command is still active, continue turning
-            right_motor.period_us(30);
-            left_motor.period_us(30);
-            right_motor.write(0.25f);
-            left_motor.write(0.75f);
-            sensor.line_detection();
-            bt.check_for_data();
-            }
-    else {//if line is not detected and bluetooth command not received, stop the buggy
+       
+         if ((sensor.line_detection()) && (bt.c=='T')){//if line is not detected and bluetooth command not received, stop the buggy
             SpeedReducer.attach(&reduce_speed, 0.0050);
+              ena = 0;
+             right_motor.write(0.5f);
+        left_motor.write(0.5f);
             sensor.line_detection();
             }
 
     ThisThread::sleep_for(100ms);
+    
    }
+   
  }

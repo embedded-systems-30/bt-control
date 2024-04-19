@@ -61,10 +61,6 @@ int main(void){
     left_motor.write(0.50);
     ThisThread::sleep_for(1000ms);
     ena=1; 
-    while(1){
-      right_motor=0.6f;
-      left_motor=0.4f;
-    }
     
     
      line_sensor sensor(A0, A1, A2, A3, A4, A5);//creating an object for the 6 sensors
@@ -87,7 +83,7 @@ int main(void){
          buggy_turn_left();
       }
      }   
-             if (bt.c=='T'){//if microcontroller recieves command 'T' from buggy it will start doing a uturn until line has been detected again
+             if (bt.check_for_data()=='T'){//if microcontroller recieves command 'T' from buggy it will start doing a uturn until line has been detected again
             right_motor.period_us(30);
             left_motor.period_us(30);
             right_motor.write(0.6f);
@@ -101,7 +97,7 @@ int main(void){
            
             }
        
-         if ((sensor.line_detection()) && (bt.c=='T')){//if line is not detected and bluetooth command not received, stop the buggy
+         if ((!sensor.line_detection()) && (bt.check_for_data()!='T')){//if line is not detected and bluetooth command not received, stop the buggy
             SpeedReducer.attach(&reduce_speed, 0.0050);
               ena = 0;
              right_motor.write(0.5f);

@@ -24,36 +24,36 @@ return '\0';//if no value is readable return random value in order to showcase e
     PwmOut left_motor(PA_8);
 
 Ticker SpeedReducer;
-float duty_cycle = .51f;
+float duty_cycle = .6f;
 void reduce_speed(){//can be in hpp
-     if (duty_cycle > 0){
+     if (duty_cycle > 50){
      duty_cycle -= 0.05f;
      right_motor.period_us(30);
      left_motor.period_us(30);
-     right_motor.write(duty_cycle);
-     left_motor.write(1-duty_cycle);
+     right_motor.write(1-duty_cycle);
+     left_motor.write(duty_cycle);
      
     }else{
      SpeedReducer.detach();
  }
-  if (duty_cycle < 0) {
-        duty_cycle = 0;
+  if (duty_cycle < 50) {
+        duty_cycle = 50;
         }
        
  }  
      DigitalOut ena(PB_2,0);
      
      void buggy_straight(){
-         right_motor.write(0.6f);
-         left_motor.write(0.4f);
+         right_motor.write(0.4f);
+         left_motor.write(0.6f);
      }
      void buggy_turn_right(){
-         right_motor.write(0.6f);
-         left_motor.write(0.35f);
+         right_motor.write(0.4f);
+         left_motor.write(0.65f);
      }
      void buggy_turn_left(){
-      right_motor.write(0.65);
-      left_motor.write(0.4f);
+      right_motor.write(0.45);
+      left_motor.write(0.6f);
      }
 int main(void){
     bluetooth bt(PA_11, PA_12, 9600);
@@ -98,10 +98,7 @@ int main(void){
             }
        
          if ((!sensor.line_detection()) && (bt.check_for_data()!='T')){//if line is not detected and bluetooth command not received, stop the buggy
-            SpeedReducer.attach(&reduce_speed, 0.0050);
-              ena = 0;
-             right_motor.write(0.5f);
-        left_motor.write(0.5f);
+            SpeedReducer.attach(&reduce_speed, 50ms);
             sensor.line_detection();
             }
 

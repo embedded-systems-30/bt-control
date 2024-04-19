@@ -11,7 +11,7 @@ class line_sensor{
     public:
     line_sensor(PinName s1, PinName s2, PinName s3, PinName s4, PinName s5, PinName s6) : 
     sensor_1(s1), sensor_2(s2), sensor_3(s3), sensor_4(s4), sensor_5(s5), sensor_6(s6){
-        threshhold = 0.1f; 
+        threshhold = 0.2f; 
     }
     float value_1, value_2, value_3, value_4, value_5,value_6;
     void read_line(){
@@ -35,7 +35,7 @@ class line_sensor{
         }
 
     bool line_centre(){
-        if((value_3 || value_4)>=threshhold){
+        if((value_3 || value_4)>=threshhold &&(value_1<threshhold)&&(value_2<threshhold)&&(value_5<threshhold)){
             return true;
             }
         else{return false;}
